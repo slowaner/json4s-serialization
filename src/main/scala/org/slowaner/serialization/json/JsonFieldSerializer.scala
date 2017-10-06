@@ -11,7 +11,7 @@ trait JsonFieldSerializer[T] extends JsonSerializer[T] with FieldSerializer[T, J
     initFieldsMirrorWith(obj)
     JObject(serFields.map(f => {
       val fBind = fieldsMirrorsByTermSymbol(f)
-      fBind.fName -> JsonSerialization.serialize(fBind.fMirror.get)
+      fBind.fName -> JsonSerializationImpl.serialize(fBind.fMirror.get)
     }).toList)
   }
 }

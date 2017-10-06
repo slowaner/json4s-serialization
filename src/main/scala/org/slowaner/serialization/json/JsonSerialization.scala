@@ -16,17 +16,23 @@ import org.slowaner.serialization.{Deserializers, Serialization, Serializers}
   */
 trait JsonSerialization extends Serialization[JValue] with JsonDeserialization {
 
-  val serializers: Serializers[Any, JValue] = jsonSerializers
-  val deserializers: Deserializers[JValue, Any] = jsonDeserializers
+  val serializers: Serializers[Any, JValue]
+  val deserializers: Deserializers[JValue, Any]
 
-  override def serializeSelf(a: Any): JValue = if (a == null) JNull else serializers.customSerializer.applyOrElse(a, (o: Any) => Extraction.decompose(o)(jsonFormats))
+ override final def serializeSelf(a: Any): JValue =
+    if (a == null) JNull
+    else serializers.customSerializer.orElse(JsonSerializationImpl.serializers.customSerializer).applyOrElse(a, (o: Any) => Extraction.decompose(o)(jsonFormats))
 
-  override def serializeAll(a: Any): JValue = if (a == null) JNull else serializers.customAllSerializer.applyOrElse(a, (o: Any) => Extraction.decompose(o)(jsonFormats))
+  override final def serializeAll(a: Any): JValue =
+    if (a == null) JNull
+    else serializers.customAllSerializer.orElse(JsonSerializationImpl.serializers.customAllSerializer).applyOrElse(a, (o: Any) => Extraction.decompose(o)(jsonFormats))
 
-  override def serializeWith(a: Any, fieldsNames: Set[String]): JValue = if (a == null) JNull else serializers.customWithSerializer(fieldsNames).applyOrElse(a, (o: Any) => Extraction.decompose(o)(jsonFormats))
+  override final def serializeWith(a: Any, fieldsNames: Set[String]): JValue =
+    if (a == null) JNull
+    else serializers.customWithSerializer(fieldsNames).orElse(JsonSerializationImpl.serializers.customWithSerializer(fieldsNames)).applyOrElse(a, (o: Any) => Extraction.decompose(o)(jsonFormats))
 
-  override def deserialize[R](a: json4s.JValue)(implicit ttag: ru.TypeTag[R]): R =
-    deserializers.customDeserializer.orElse(JsonCaseClassDeserializer.deserialize).applyOrElse((ttag, a),
+  override final def deserialize[R](a: json4s.JValue)(implicit ttag: ru.TypeTag[R]): R =
+    deserializers.customDeserializer.orElse(JsonSerializationImpl.deserializers.customDeserializer).orElse(JsonCaseClassDeserializer.deserialize).applyOrElse((ttag, a),
       (tpl: (ru.TypeTag[_], JValue)) => tpl._2.extract(jsonFormats, Manifest.classType(tpl._1.mirror.runtimeClass(tpl._1.tpe)))).asInstanceOf[R]
 }
 
@@ -65,4 +71,5 @@ object JsonSerialization {
     case dtm: OffsetDateTime =>
       JString(dtm.toString)
   }))
+
 }

@@ -2,10 +2,8 @@ import sbt.Keys._
 import sbt._
 import xerial.sbt.pack.PackPlugin
 
-val organizationName = "org.slowaner"
+val organizationName = "com.github.slowaner.scala"
 val rootProjectName = "json4s-serialization"
-
-val reflections4sProjectUri = uri("git://github.com/slowaner/reflections4s.git#master")
 
 // Versions
 // Testing
@@ -17,6 +15,8 @@ val json4sVersion = "3.5.3"
 
 // Persistence
 val persistenceVersion = "2.2"
+
+resolvers += Opts.resolver.sonatypeSnapshots
 
 lazy val commonSettings = Defaults.defaultConfigs ++ Seq(
   organization := organizationName,
@@ -40,13 +40,12 @@ lazy val rootSettings = PackPlugin.packSettings ++ Seq(
     "org.json4s" %% "json4s-jackson" % json4sVersion,
     "org.json4s" %% "json4s-ext" % json4sVersion,
     // Persistence
-    "javax.persistence" % "javax.persistence-api" % persistenceVersion
+    "javax.persistence" % "javax.persistence-api" % persistenceVersion,
+    // Reflections4s
+    "com.github.slowaner.scala" % "reflections4s" % "0.0.3-SNAPSHOT"
   )
 )
 
 lazy val root = Project(rootProjectName, file("."))
   .settings(commonSettings ++ rootSettings)
   .enablePlugins(PackPlugin)
-  .dependsOn(reflections4sProject)
-
-lazy val reflections4sProject = RootProject(reflections4sProjectUri)

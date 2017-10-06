@@ -15,7 +15,4 @@ package object json {
       Json2InstantSerializer,
     )
 
-  implicit val jsonSerializers: Serializers[Any, JValue] = predefined.allSerializers
-
-  implicit val jsonDeserializers: Deserializers[JValue, Any] = predefined.allDerializers
 }
