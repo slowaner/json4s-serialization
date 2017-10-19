@@ -1,4 +1,4 @@
-package org.slowaner.serialization
+package com.github.slowaner.scala.serialization
 
 import javax.persistence.Transient
 
@@ -7,19 +7,16 @@ import scala.reflect.runtime.{universe => ru}
 
 trait FieldSerializer[T, +R] extends Serializer[T, R] {
 
-  val ttag: ru.TypeTag[T]
-  val ctag: ClassTag[T]
-
   lazy val mirror: ru.Mirror = ttag.mirror
   lazy val tpe: ru.Type = ttag.tpe
   lazy val fields: Iterable[ru.TermSymbol] = tpe.decls.filter(d => d.isTerm && (d.asTerm.isVal || d.asTerm.isVar) && (!d.annotations.exists(a => a.tree.tpe <:< ru.typeOf[Transient]))).map(_.asTerm)
   lazy val fieldsByNames: Map[String, ru.TermSymbol] = fields.map(f => f.name.toString.trim -> f).toMap
-
+  val ttag: ru.TypeTag[T]
+  val ctag: ClassTag[T]
   val selfFields: Iterable[ru.TermSymbol]
   val relationsFields: Iterable[ru.TermSymbol]
-
-  var fieldsMirrorsByTermSymbol: Map[ru.TermSymbol, FieldSerializer.BindedField] = _
-  var fieldsMirrorsByName: Map[String, FieldSerializer.BindedField] = _
+  var fieldsMirrorsByTermSymbol: Map[ru.TermSymbol, BondField] = _
+  var fieldsMirrorsByName: Map[String, BondField] = _
 
   override def serializeSelf: PartialFunction[Any, R] = {
     case obj: Serializable[R] => obj.serializeSelf
@@ -41,7 +38,7 @@ trait FieldSerializer[T, +R] extends Serializer[T, R] {
       fieldsMirrorsByTermSymbol = if (fieldsMirrorsByTermSymbol != null) fieldsMirrorsByTermSymbol.mapValues(bndF => bndF.copy(fMirror = bndF.fMirror.bind(obj)))
       else {
         val m = mirror.reflect(obj)(ctag)
-        fieldsByNames.map({ case (fName, f) => f -> FieldSerializer.BindedField(fName, m.reflectField(f)) })
+        fieldsByNames.map({ case (fName, f) => f -> BondField(fName, m.reflectField(f)) })
       }
       fieldsMirrorsByName = fieldsMirrorsByTermSymbol.map({ case (_, fBind) => fBind.fName -> fBind })
     }
@@ -49,10 +46,6 @@ trait FieldSerializer[T, +R] extends Serializer[T, R] {
   }
 
   protected def serializeFields(obj: T, serFields: Iterable[ru.TermSymbol]): R
-}
 
-object FieldSerializer {
-
-  case class BindedField(fName: String, fMirror: ru.FieldMirror)
-
+  case class BondField(fName: String, fMirror: ru.FieldMirror)
 }

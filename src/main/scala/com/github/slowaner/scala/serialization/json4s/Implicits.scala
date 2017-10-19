@@ -1,11 +1,12 @@
-package org.slowaner.serialization.json
-
-import org.json4s.{DoubleMode => JsonDoubleMode, Implicits => JsonImplicits, _}
+package com.github.slowaner.scala.serialization.json4s
 
 import java.time.{Instant, LocalDateTime, OffsetDateTime, ZonedDateTime}
 import java.util.Date
 
+import scala.language.implicitConversions
 import scala.reflect.runtime.{universe => ru}
+
+import org.json4s.{DoubleMode => JsonDoubleMode, Implicits => JsonImplicits, _}
 
 trait Implicits extends JsonImplicits with JsonDoubleMode {
   // Serialization
@@ -47,8 +48,4 @@ trait Implicits extends JsonImplicits with JsonDoubleMode {
   implicit def JValue2JavaInteger(x: JValue): Integer = JsonSerializationImpl.deserialize[Integer](x)
 
   implicit def JValue2OptionString[R: ru.TypeTag](x: JValue): Option[R] = JsonSerializationImpl.deserialize[Option[R]](x)
-}
-
-object Implicits extends Implicits {
-
 }

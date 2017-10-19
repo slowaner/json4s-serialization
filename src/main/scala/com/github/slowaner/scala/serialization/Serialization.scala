@@ -1,4 +1,4 @@
-package org.slowaner.serialization
+package com.github.slowaner.scala.serialization
 
 trait Serialization[+T] {
   final def serialize(a: Any): T = serializeSelf(a)

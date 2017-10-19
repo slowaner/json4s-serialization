@@ -1,4 +1,4 @@
-package org.slowaner.serialization
+package com.github.slowaner.scala.serialization
 
 trait SimpleSerializer[M, R] extends Serializer[M, R] {
 

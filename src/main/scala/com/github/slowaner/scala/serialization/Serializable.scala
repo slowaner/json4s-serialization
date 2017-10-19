@@ -1,6 +1,4 @@
-package org.slowaner.serialization
-
-import scala.reflect.runtime.{universe => ru}
+package com.github.slowaner.scala.serialization
 
 trait Serializable[+R] extends scala.Serializable {
   val selfFieldsNames: Set[String]

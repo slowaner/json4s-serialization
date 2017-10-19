@@ -1,4 +1,4 @@
-package org.slowaner.serialization
+package com.github.slowaner.scala.serialization
 
 import scala.reflect.runtime.{universe => ru}
 

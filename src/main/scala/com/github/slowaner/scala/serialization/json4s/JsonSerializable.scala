@@ -1,8 +1,7 @@
-package org.slowaner.serialization.json
+package com.github.slowaner.scala.serialization.json4s
 
+import com.github.slowaner.scala.serialization.Serializable
 import org.json4s.{JObject, JValue}
-
-import org.slowaner.serialization.Serializable
 
 trait JsonSerializable extends Serializable[JValue] with Implicits {
 
