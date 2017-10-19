@@ -5,9 +5,10 @@ import scala.collection.JavaConverters._
 import com.github.slowaner.scala.serialization.json4s.{JsonDeserializers, JsonSerialization, JsonSerializer, JsonSerializers}
 import org.json4s.{JArray, JValue}
 
-trait PredefinedSerizalizers {
+trait PredefinedSerializers {
 
   val jsonSerialization: JsonSerialization
+
   val predefinedSerializers = new JsonSerializers[Any](
     Seq2JsonSerializer.asInstanceOf[JsonSerializer[Any]],
     Set2JsonSerializer.asInstanceOf[JsonSerializer[Any]]

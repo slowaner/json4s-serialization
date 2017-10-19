@@ -48,4 +48,5 @@ trait FieldSerializer[T, +R] extends Serializer[T, R] {
   protected def serializeFields(obj: T, serFields: Iterable[ru.TermSymbol]): R
 
   case class BondField(fName: String, fMirror: ru.FieldMirror)
+
 }

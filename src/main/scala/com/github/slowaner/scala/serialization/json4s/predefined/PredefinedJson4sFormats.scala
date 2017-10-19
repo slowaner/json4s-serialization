@@ -4,9 +4,19 @@ import java.text.DateFormat
 import java.time.{Instant, LocalDateTime, OffsetDateTime, ZonedDateTime}
 import java.util.Date
 
-import org.json4s.{CustomSerializer, JString}
+import org.json4s.ext.JodaTimeSerializers
+import org.json4s.{CustomSerializer, DefaultFormats, Formats, JString}
 
 trait PredefinedJson4sFormats {
+
+  val predefinedFormats: Formats = DefaultFormats ++
+    JodaTimeSerializers.all ++
+    Set(
+      Json2OffsetDateTimeSerializer,
+      Json2LocalDateTimeSerializer,
+      Json2ZonedDateTimeSerializer,
+      Json2InstantSerializer,
+    )
 
   object Json2DateSerializer extends CustomSerializer[Date](format => ( {
     case JString(dtmStr) => DateFormat.getDateTimeInstance.parse(dtmStr)

@@ -7,8 +7,8 @@ trait JsonSerializable extends Serializable[JValue] with Implicits {
 
   override def serializeSelf: JValue = serializeWith(selfFieldsNames)
 
-  override def serializeAll: JValue = serializeWith(selfFieldsNames ++ relationFieldsNames)
-
   override def serializeWith(fieldsNames: Traversable[String]): JValue =
     JObject(getSerializedValuesForNames(fieldsNames).toList)
+
+  override def serializeAll: JValue = serializeWith(selfFieldsNames ++ relationFieldsNames)
 }
