@@ -25,19 +25,21 @@ trait JsonSerialization extends serialization.Serialization[JValue] with JsonDes
 
   val caseClassDeserializer = new JsonCaseClassDeserializer(this)
 
-  override final def serializeSelf(a: Any): JValue =
-    if (a == null) JNull
-    else serializers.customSerializer.applyOrElse(a, (o: Any) => Extraction.decompose(o)(jsonFormats))
+  override final def serializeSelf(o: Any): JValue =
+    if (serializers.customSerializer.isDefinedAt(o)) serializers.customSerializer(o)
+    else Extraction.decompose(o)(jsonFormats)
 
-  override final def serializeAll(a: Any): JValue =
-    if (a == null) JNull
-    else serializers.customAllSerializer.applyOrElse(a, (o: Any) => Extraction.decompose(o)(jsonFormats))
+  override final def serializeAll(o: Any): JValue =
+    if (serializers.customAllSerializer.isDefinedAt(o)) serializers.customSerializer(o)
+    else Extraction.decompose(o)(jsonFormats)
 
-  override final def serializeWith(a: Any, fieldsNames: Set[String]): JValue =
-    if (a == null) JNull
-    else serializers.customWithSerializer(fieldsNames).applyOrElse(a, (o: Any) => Extraction.decompose(o)(jsonFormats))
+  override final def serializeWith(o: Any, fieldsNames: Set[String]): JValue =
+    if (serializers.customWithSerializer(fieldsNames).isDefinedAt(o)) serializers.customWithSerializer(fieldsNames)(o)
+    else Extraction.decompose(o)(jsonFormats)
 
-  override final def deserialize[R](a: json4s.JValue)(implicit ttag: ru.TypeTag[R]): R =
-    deserializers.customDeserializer.orElse(caseClassDeserializer.deserialize).applyOrElse((ttag, a),
-      (tpl: (ru.TypeTag[_], JValue)) => tpl._2.extract(jsonFormats, Manifest.classType(tpl._1.mirror.runtimeClass(tpl._1.tpe)))).asInstanceOf[R]
+  override final def deserialize[R](a: json4s.JValue)(implicit ttag: ru.TypeTag[R]): R = {
+    val deser = deserializers.customDeserializer.orElse(caseClassDeserializer.deserialize)
+    if (deser.isDefinedAt((ttag, a))) deser((ttag, a)).asInstanceOf[R]
+    else a.extract(jsonFormats, Manifest.classType(ttag.mirror.runtimeClass(ttag.tpe))).asInstanceOf[R]
+  }
 }

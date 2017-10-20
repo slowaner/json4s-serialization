@@ -18,13 +18,16 @@ class JsonCaseClassDeserializer(deserialization: JsonDeserialization) extends Ca
             factoryCache += ttag -> fact
             fact
           })
-          factory.deserializeWith(
-            fields map {
-              case (key, vl) =>
-                key -> deserialization.deserialize(vl)(ReflectionHelper.typeToTypeTag(factory.defaultConstructorParams.find(_.name.toString == key).get.typeSignature))
-            } toMap)
+          val nFields = fields.map({
+            case (key, vl) =>
+              val fld = factory.defaultConstructorParams.find(_.name.toString == key).get
+              val ttag = ReflectionHelper.typeToTypeTag(fld.typeSignature)
+              key -> deserialization.deserialize(vl)(ttag)
+          }).toMap[String, Any]
+          factory.deserializeWith(nFields)
         case _ => throw new IllegalArgumentException("Passed parameter must be an JObject")
       }
   }
+
   private[this] var factoryCache = Map[ru.TypeTag[_], CaseClassFactory[_]]()
 }
