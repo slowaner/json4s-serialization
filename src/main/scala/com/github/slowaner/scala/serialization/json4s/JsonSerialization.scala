@@ -19,7 +19,9 @@ trait JsonSerialization extends serialization.Serialization[JValue] with JsonDes
   val serializers: Serializers[Any, JValue] = if (customSerializers != null) customSerializers ++ predefinedSerializers else predefinedSerializers
   val deserializers: Deserializers[JValue, Any] = if (customSerializers != null) customDeserializers ++ predefinedDeserializers else predefinedDeserializers
 
-  final implicit val jsonFormats: Formats = if (customJson4sFormats != null) customJson4sFormats ++ predefinedFormats.customSerializers else predefinedFormats
+  val jsonFormats: Formats = if (customJson4sFormats != null) customJson4sFormats ++ predefinedFormats.customSerializers else predefinedFormats
+
+  override val jsonSerialization: JsonSerialization = this
 
   val caseClassDeserializer = new JsonCaseClassDeserializer(this)
 
