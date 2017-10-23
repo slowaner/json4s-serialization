@@ -1,5 +1,9 @@
 package com.github.slowaner.scala.serialization.json4s.predefined
 
+import java.text.DateFormat
+import java.time.{Instant, LocalDateTime, OffsetDateTime, ZonedDateTime}
+import java.util.Date
+
 import scala.collection.JavaConverters._
 import scala.reflect.runtime.{universe => ru}
 
@@ -18,9 +22,16 @@ trait PredefinedSerializers {
   )
 
   val predefinedDeserializers = new JsonDeserializers[Any](
+    JValue2IntDeserializer,
+    JValue2DoubleDeserializer,
     JValue2SetDeserializer,
     JValue2SeqDeserializer,
-    JValue2MapDeserializer
+    JValue2MapDeserializer,
+    JValue2DateSerializer,
+    JValue2LocalDateTimeSerializer,
+    JValue2ZonedDateTimeSerializer,
+    JValue2InstantSerializer,
+    JValue2OffsetDateTimeSerializer
   )
 
 
@@ -106,11 +117,52 @@ trait PredefinedSerializers {
     override val deserialize: PartialFunction[(ru.TypeTag[_], JValue), Map[_, _]] = {
       case (jttag, JObject(elems)) if jttag.tpe <:< ttag.tpe => elems.map {
         case (name, jelem) =>
-          jsonSerialization.deserialize(JString(name))(ReflectionHelper.typeToTypeTag(jttag.tpe.typeArgs.head))->
-           jsonSerialization.deserialize(jelem)(ReflectionHelper.typeToTypeTag(jttag.tpe.typeArgs.head))
+          jsonSerialization.deserialize(JString(name))(ReflectionHelper.typeToTypeTag(jttag.tpe.typeArgs.head)) ->
+            jsonSerialization.deserialize(jelem)(ReflectionHelper.typeToTypeTag(jttag.tpe.typeArgs.last))
       }.toMap
     }
-
   }
+
+  object JValue2IntDeserializer extends JsonCustomDeserializer[Int]({
+    case JInt(intVal) => intVal.toInt
+    case json => throw MappingException(s"$json cannot be converted to Int", null)
+  })
+
+  object JValue2DoubleDeserializer extends JsonCustomDeserializer[Double]({
+    case JDouble(doubleVal) => doubleVal
+    case JDecimal(decimalVal) => decimalVal.toDouble
+    case json => throw MappingException(s"$json cannot be converted to Double", null)
+  })
+
+  // Date deserializers
+  object JValue2DateSerializer extends JsonCustomDeserializer[Date]({
+    case JString(dtmStr) => DateFormat.getDateTimeInstance.parse(dtmStr)
+    case JNull => null
+    case json => throw MappingException(s"$json cannot be converted to Date", null)
+  })
+
+  object JValue2LocalDateTimeSerializer extends JsonCustomDeserializer[LocalDateTime]({
+    case JString(dtmStr) => LocalDateTime.parse(dtmStr)
+    case JNull => null
+    case json => throw MappingException(s"$json cannot be converted to LocalDateTime", null)
+  })
+
+  object JValue2ZonedDateTimeSerializer extends JsonCustomDeserializer[ZonedDateTime]({
+    case JString(dtmStr) => ZonedDateTime.parse(dtmStr)
+    case JNull => null
+    case json => throw MappingException(s"$json cannot be converted to ZonedDateTime", null)
+  })
+
+  object JValue2InstantSerializer extends JsonCustomDeserializer[Instant]({
+    case JString(instStr) => Instant.parse(instStr)
+    case JNull => null
+    case json => throw MappingException(s"$json cannot be converted to Instant", null)
+  })
+
+  object JValue2OffsetDateTimeSerializer extends JsonCustomDeserializer[OffsetDateTime]({
+    case JString(dtmStr) => OffsetDateTime.parse(dtmStr)
+    case JNull => null
+    case json => throw MappingException(s"$json cannot be converted to OffsetDateTime", null)
+  })
 
 }

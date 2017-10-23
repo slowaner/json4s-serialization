@@ -9,6 +9,8 @@ import org.json4s._
 
 class JsonCaseClassDeserializer(deserialization: JsonDeserialization) extends CaseClassDeserializer[JValue] {
 
+  private[this] var factoryCache = Map[ru.TypeTag[_], CaseClassFactory[_]]()
+
   override val deserialize: PartialFunction[(ru.TypeTag[_], JValue), Any] = {
     case (ttag, json) if ttag.tpe.typeSymbol.isClass && ttag.tpe.typeSymbol.asClass.isCaseClass =>
       json match {
@@ -18,16 +20,19 @@ class JsonCaseClassDeserializer(deserialization: JsonDeserialization) extends Ca
             factoryCache += ttag -> fact
             fact
           })
-          val nFields = fields.map({
+          val nFields = fields.filter {
+            case (key, value) => factory.defaultConstructorParams.exists(_.name.toString == key)
+          }.map({
             case (key, vl) =>
-              val fld = factory.defaultConstructorParams.find(_.name.toString == key).get
-              val ttag = ReflectionHelper.typeToTypeTag(fld.typeSignature)
-              key -> deserialization.deserialize(vl)(ttag)
+              factory.defaultConstructorParams.find(_.name.toString == key) match {
+                case Some(value) =>
+                  val ttag = ReflectionHelper.typeToTypeTag(value.typeSignature)
+                  key -> deserialization.deserialize(vl)(ttag)
+                case _ => key -> vl
+              }
           }).toMap[String, Any]
           factory.deserializeWith(nFields)
         case _ => throw new IllegalArgumentException("Passed parameter must be an JObject")
       }
   }
-
-  private[this] var factoryCache = Map[ru.TypeTag[_], CaseClassFactory[_]]()
 }
