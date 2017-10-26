@@ -9,7 +9,7 @@ import org.json4s
 import org.json4s._
 
 /**
-  * Created by gunman on 16.06.2017.
+  * Created by slowaner on 16.06.2017.
   */
 trait JsonSerialization extends serialization.Serialization[JValue] with JsonDeserialization with PredefinedJson4sFormats with PredefinedSerializers {
   val customSerializers: Serializers[Any, JValue]

@@ -21,17 +21,17 @@ class JsonCaseClassDeserializer(deserialization: JsonDeserialization) extends Ca
             fact
           })
           val nFields = fields.filter {
-            case (key, value) => factory.defaultConstructorParams.exists(_.name.toString == key)
+            case (key, value) => factory.applyMethodParams.exists(_.name.toString == key)
           }.map({
             case (key, vl) =>
-              factory.defaultConstructorParams.find(_.name.toString == key) match {
+              factory.applyMethodParams.find(_.name.toString == key) match {
                 case Some(value) =>
                   val ttag = ReflectionHelper.typeToTypeTag(value.typeSignature)
                   key -> deserialization.deserialize(vl)(ttag)
                 case _ => key -> vl
               }
           }).toMap[String, Any]
-          factory.deserializeWith(nFields)
+          factory.buildWith(nFields)
         case _ => throw new IllegalArgumentException("Passed parameter must be an JObject")
       }
   }

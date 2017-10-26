@@ -16,6 +16,9 @@ val json4sVersion = "3.5.3"
 // Persistence
 val persistenceVersion = "2.2"
 
+// Reflections4s
+val reflections4sVersion = "0.0.5-SNAPSHOT"
+
 resolvers += Opts.resolver.sonatypeSnapshots
 
 lazy val commonSettings = Defaults.defaultConfigs ++ Seq(
@@ -42,7 +45,7 @@ lazy val rootSettings = PackPlugin.packSettings ++ Seq(
     // Persistence
     "javax.persistence" % "javax.persistence-api" % persistenceVersion,
     // Reflections4s
-    "com.github.slowaner.scala" % "reflections4s" % "0.0.3-SNAPSHOT"
+    "com.github.slowaner.scala" % "reflections4s" % reflections4sVersion
   )
 )
 
