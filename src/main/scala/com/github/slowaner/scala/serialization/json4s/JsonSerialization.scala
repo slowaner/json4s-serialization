@@ -13,7 +13,7 @@ import org.json4s._
   */
 trait JsonSerialization extends serialization.Serialization[JValue] with JsonDeserialization with PredefinedJson4sFormats with PredefinedSerializers {
   val customSerializers: Serializers[Any, JValue]
-  val customDeserializers: Deserializers[Any, JValue]
+  val customDeserializers: Deserializers[JValue, Any]
   val customJson4sFormats: Formats
 
   val serializers: Serializers[Any, JValue] = if (customSerializers != null) customSerializers ++ predefinedSerializers else predefinedSerializers
