@@ -12,12 +12,12 @@ import org.json4s._
   * Created by slowaner on 16.06.2017.
   */
 trait JsonSerialization extends serialization.Serialization[JValue] with JsonDeserialization with PredefinedJson4sFormats with PredefinedSerializers {
-  val customSerializers: Serializers[Any, JValue]
-  val customDeserializers: Deserializers[JValue, Any]
-  val customJson4sFormats: Formats
+  def customSerializers: Serializers[Any, JValue]
+  def customDeserializers: Deserializers[JValue, Any]
+  def customJson4sFormats: Formats
 
   val serializers: Serializers[Any, JValue] = if (customSerializers != null) customSerializers ++ predefinedSerializers else predefinedSerializers
-  val deserializers: Deserializers[JValue, Any] = if (customSerializers != null) customDeserializers ++ predefinedDeserializers else predefinedDeserializers
+  val deserializers: Deserializers[JValue, Any] = if (customDeserializers != null) customDeserializers ++ predefinedDeserializers else predefinedDeserializers
 
   val jsonFormats: Formats = if (customJson4sFormats != null) customJson4sFormats ++ predefinedFormats.customSerializers else predefinedFormats
 
