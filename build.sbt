@@ -17,7 +17,7 @@ val json4sVersion = "3.5.3"
 val persistenceVersion = "2.2"
 
 // Reflections4s
-val reflections4sVersion = "0.0.6-SNAPSHOT"
+val reflections4sVersion = "0.0.8-SNAPSHOT"
 
 resolvers += Opts.resolver.sonatypeSnapshots
 

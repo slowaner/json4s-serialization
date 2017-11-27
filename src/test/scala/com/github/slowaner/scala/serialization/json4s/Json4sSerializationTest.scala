@@ -4,11 +4,11 @@ import java.lang
 import java.time.format.DateTimeParseException
 import java.time.{LocalDateTime, OffsetDateTime, ZonedDateTime}
 
-import com.github.slowaner.scala.serialization.{Deserializers, Serializers}
-import org.json4s
 import org.json4s.JsonDSL._
 import org.json4s._
 import org.scalatest._
+
+import com.github.slowaner.scala.serialization.{Deserializers, Serializers}
 
 private case class MockSubClass(name: String, value: Int)
 
@@ -44,20 +44,25 @@ class Json4sSerializationTest extends FlatSpec with Matchers {
   val doubleVal = 1.1d
   val strVal = "sTr"
 
-  // Collections
-  val intList = List(intVal, intVal * 2, intVal * 3)
-  val intSet = intList.toSet
-  val intSeq = intList
-  val doubleList = List(doubleVal, doubleVal * 2, doubleVal * 4)
-  val doubleSet = doubleList.toSet
-  val doubleSeq = doubleList
-  val stringList = List(strVal, strVal * 2, strVal * 3)
-  val stringSet = stringList.toSet
-  val stringSeq = stringList
+  // Options values
+  val intOptionVal: Some[Int] = Some(intVal)
+  val doubleOptionVal: Some[Double] = Some(doubleVal)
+  val strOptionVal: Some[String] = Some(strVal)
 
-  val intMap = intList.indices.zip(intList).map(tupl => (prefixer("int_")(tupl._1), tupl._2)).toMap
-  val doubleMap = doubleList.indices.zip(doubleList).map(tupl => (prefixer("double_")(tupl._1), tupl._2)).toMap
-  val stringMap = stringList.indices.zip(stringList).map(tupl => (prefixer("String_")(tupl._1), tupl._2)).toMap
+  // Collections
+  val intList: List[Int] = List(intVal, intVal * 2, intVal * 3)
+  val intSet: Set[Int] = intList.toSet
+  val intSeq: Seq[Int] = intList
+  val doubleList: List[Double] = List(doubleVal, doubleVal * 2, doubleVal * 4)
+  val doubleSet: Set[Double] = doubleList.toSet
+  val doubleSeq: Seq[Double] = doubleList
+  val stringList: List[String] = List(strVal, strVal * 2, strVal * 3)
+  val stringSet: Set[String] = stringList.toSet
+  val stringSeq: Seq[String] = stringList
+
+  val intMap: Map[String, Int] = intList.indices.zip(intList).map(tupl => (prefixer("int_")(tupl._1), tupl._2)).toMap
+  val doubleMap: Map[String, Double] = doubleList.indices.zip(doubleList).map(tupl => (prefixer("double_")(tupl._1), tupl._2)).toMap
+  val stringMap: Map[String, String] = stringList.indices.zip(stringList).map(tupl => (prefixer("String_")(tupl._1), tupl._2)).toMap
 
   // Dates
   private val localDateTimeVal = LocalDateTime.now()
@@ -107,24 +112,27 @@ class Json4sSerializationTest extends FlatSpec with Matchers {
     ("stringArray" -> mockJsonStringArray) ~
     ("mixedArray" -> mockJsonMixedArray)
 
+  val mockJsonIntValue = JInt(intVal)
+  val mockJsonDoubleValue = JDouble(doubleVal)
+  val strJson = JString(strVal)
+
   //--------------------------------------------------------------------------------
   // String serialization
-  val strJson = JString(strVal)
   // Not Null String to Json
   "A JsonSerialization" must s"""serialize (String) "$strVal" to $strJson""" in {
-    Serialization.serialize(strVal) should be(strJson)
+    Serialization.serialize(strVal) shouldBe strJson
   }
   // Json to Not Null String
   it must s"""deserialize $strJson to (String) "$strVal"""" in {
-    Serialization.deserialize[String](strJson) should be(strVal)
+    Serialization.deserialize[String](strJson) shouldBe strVal
   }
   // Null String to JNull
   it must s"""serialize (String) $nullVal to $JNull""" in {
-    Serialization.serialize(nullVal: String) should be(JNull)
+    Serialization.serialize(nullVal: String) shouldBe JNull
   }
   // JNull to String
   it must s"""deserialize $JNull to (String) $nullVal""" in {
-    Serialization.deserialize[String](JNull) should be(nullVal: String)
+    Serialization.deserialize[String](JNull) shouldBe (nullVal: String)
   }
   // JNothing to String
   it should s"""throw org.json4s.package$$MappingException while deserialize $JNothing to String""" in {
@@ -138,11 +146,11 @@ class Json4sSerializationTest extends FlatSpec with Matchers {
   val intJson = JInt(intVal)
   // Int to Json
   it must s"""serialize (int) $intVal to $intJson""" in {
-    Serialization.serialize(intVal) should be(intJson)
+    Serialization.serialize(intVal) shouldBe intJson
   }
   // Json to Int
   it must s"""deserialize $intJson to (int) $intVal""" in {
-    Serialization.deserialize[Int](intJson) should be(intVal)
+    Serialization.deserialize[Int](intJson) shouldBe intVal
   }
   // JNull to Int
   it should s"""throw org.json4s.package$$MappingException while deserialize $JNull to (int)""" in {
@@ -163,15 +171,15 @@ class Json4sSerializationTest extends FlatSpec with Matchers {
   val integerJson = JInt(integerVal.intValue())
   // Java Integer to Json
   it must s"""serialize (java.lang.Integer) $integerVal to $integerJson""" in {
-    Serialization.serialize(integerVal) should be(integerJson)
+    Serialization.serialize(integerVal) shouldBe integerJson
   }
   // Json to Java Integer
   it must s"""deserialize $integerJson to (java.lang.Integer) $integerVal""" in {
-    Serialization.deserialize[java.lang.Integer](integerJson) should be(integerVal)
+    Serialization.deserialize[java.lang.Integer](integerJson) shouldBe integerVal
   }
   // JNull to Java Integer
   it must s"""deserialize $JNull to (java.lang.Integer) $nullVal""" in {
-    Serialization.deserialize[java.lang.Integer](JNull) should be(nullVal: java.lang.Integer)
+    Serialization.deserialize[java.lang.Integer](JNull) shouldBe (nullVal: java.lang.Integer)
   }
   // JNothing to Java Integer
   it should s"""throw org.json4s.package$$MappingException while deserialize $JNothing to (java.lang.Integer)""" in {
@@ -186,15 +194,15 @@ class Json4sSerializationTest extends FlatSpec with Matchers {
   val doubleDecimalJson = JDecimal(doubleVal)
   // Double to Json
   it must s"""serialize (double) $doubleVal to $doubleJson""" in {
-    Serialization.serialize(doubleVal) should be(doubleJson)
+    Serialization.serialize(doubleVal) shouldBe doubleJson
   }
   // JDouble to Double
   it must s"""deserialize $doubleJson to (double) $doubleVal""" in {
-    Serialization.deserialize[Double](doubleJson) should be(doubleVal)
+    Serialization.deserialize[Double](doubleJson) shouldBe doubleVal
   }
   // JDecimal to Double
   it must s"""deserialize $doubleDecimalJson to (double) $doubleVal""" in {
-    Serialization.deserialize[Double](doubleDecimalJson) should be(doubleVal)
+    Serialization.deserialize[Double](doubleDecimalJson) shouldBe doubleVal
   }
   // JNull to Double
   it should s"""throw org.json4s.package$$MappingException while deserialize $JNull to (double)""" in {
@@ -216,15 +224,15 @@ class Json4sSerializationTest extends FlatSpec with Matchers {
   val javaDoubleDecimalJson = JDecimal(javaDoubleVal.doubleValue())
   // Java Double to Json
   it must s"""serialize (java.lang.Double) $javaDoubleVal to $javaDoubleJson""" in {
-    Serialization.serialize(javaDoubleVal) should be(javaDoubleJson)
+    Serialization.serialize(javaDoubleVal) shouldBe javaDoubleJson
   }
   // Json to Java Double
   it must s"""deserialize $javaDoubleJson to (java.lang.Double) $javaDoubleVal""" in {
-    Serialization.deserialize[java.lang.Double](javaDoubleJson) should be(javaDoubleVal)
+    Serialization.deserialize[java.lang.Double](javaDoubleJson) shouldBe javaDoubleVal
   }
   // JNull to Java Double
   it must s"""deserialize $JNull to (java.lang.Double) $nullVal""" in {
-    Serialization.deserialize[java.lang.Double](JNull) should be(nullVal: java.lang.Double)
+    Serialization.deserialize[java.lang.Double](JNull) shouldBe (nullVal: java.lang.Double)
   }
   // JNothing to Java Double
   it should s"""throw org.json4s.package$$MappingException while deserialize $JNothing to (java.lang.Double)""" in {
@@ -241,15 +249,15 @@ class Json4sSerializationTest extends FlatSpec with Matchers {
   val localDateTimeInvalidJson_3 = JString(localDateTimeVal.toString + "invalid")
   // LocalDateTime to Json
   it must s"""serialize (LocalDateTime) $localDateTimeVal to $localDateTimeJson""" in {
-    Serialization.serialize(localDateTimeVal) should be(localDateTimeJson)
+    Serialization.serialize(localDateTimeVal) shouldBe localDateTimeJson
   }
   // Json to LocalDateTime
   it must s"""deserialize $localDateTimeJson to (LocalDateTime) $localDateTimeVal""" in {
-    Serialization.deserialize[LocalDateTime](localDateTimeJson) should be(localDateTimeVal)
+    Serialization.deserialize[LocalDateTime](localDateTimeJson) shouldBe localDateTimeVal
   }
   // JNull to LocalDateTime
   it must s"""deserialize $JNull to (LocalDateTime) $nullVal""" in {
-    Serialization.deserialize[LocalDateTime](JNull) should be(nullVal: LocalDateTime)
+    Serialization.deserialize[LocalDateTime](JNull) shouldBe (nullVal: LocalDateTime)
   }
   // Invalid Json 1 to LocalDateTime
   it should s"""throw java.time.format.DateTimeParseException while deserialize $localDateTimeInvalidJson_1 to (LocalDateTime)""" in {
@@ -284,15 +292,15 @@ class Json4sSerializationTest extends FlatSpec with Matchers {
   val offsetDateTimeInvalidJson_3 = JString(offsetDateTimeVal.toString + "invalid")
   // OffsetDateTime to Json
   it must s"""serialize (OffsetDateTime) $offsetDateTimeVal to $offsetDateTimeJson""" in {
-    Serialization.serialize(offsetDateTimeVal) should be(offsetDateTimeJson)
+    Serialization.serialize(offsetDateTimeVal) shouldBe offsetDateTimeJson
   }
   // Json to OffsetDateTime
   it must s"""deserialize $offsetDateTimeJson to (OffsetDateTime) $offsetDateTimeVal""" in {
-    Serialization.deserialize[OffsetDateTime](offsetDateTimeJson) should be(offsetDateTimeVal)
+    Serialization.deserialize[OffsetDateTime](offsetDateTimeJson) shouldBe offsetDateTimeVal
   }
   // JNull to OffsetDateTime
   it must s"""deserialize $JNull to (OffsetDateTime) $nullVal""" in {
-    Serialization.deserialize[OffsetDateTime](JNull) should be(nullVal: OffsetDateTime)
+    Serialization.deserialize[OffsetDateTime](JNull) shouldBe (nullVal: OffsetDateTime)
   }
   // Invalid Json 1 to OffsetDateTime
   it should s"""throw java.time.format.DateTimeParseException while deserialize $offsetDateTimeInvalidJson_1 to (OffsetDateTime)""" in {
@@ -327,15 +335,15 @@ class Json4sSerializationTest extends FlatSpec with Matchers {
   val zonedDateTimeInvalidJson_3 = JString(zonedDateTimeVal.toString + "invalid")
   // ZonedDateTime to Json
   it must s"""serialize (ZonedDateTime) $zonedDateTimeVal to $zonedDateTimeJson""" in {
-    Serialization.serialize(zonedDateTimeVal) should be(zonedDateTimeJson)
+    Serialization.serialize(zonedDateTimeVal) shouldBe zonedDateTimeJson
   }
   // Json to ZonedDateTime
   it must s"""deserialize $zonedDateTimeJson to (ZonedDateTime) $zonedDateTimeVal""" in {
-    Serialization.deserialize[ZonedDateTime](zonedDateTimeJson) should be(zonedDateTimeVal)
+    Serialization.deserialize[ZonedDateTime](zonedDateTimeJson) shouldBe zonedDateTimeVal
   }
   // JNull to ZonedDateTime
   it must s"""deserialize $JNull to (ZonedDateTime) $nullVal""" in {
-    Serialization.deserialize[ZonedDateTime](JNull) should be(nullVal: ZonedDateTime)
+    Serialization.deserialize[ZonedDateTime](JNull) shouldBe (nullVal: ZonedDateTime)
   }
   // Invalid Json 1 to ZonedDateTime
   it should s"""throw java.time.format.DateTimeParseException while deserialize $zonedDateTimeInvalidJson_1 to (ZonedDateTime)""" in {
@@ -355,6 +363,7 @@ class Json4sSerializationTest extends FlatSpec with Matchers {
       Serialization.deserialize[ZonedDateTime](zonedDateTimeInvalidJson_3)
     }
   }
+
   // JNothing to ZonedDateTime
   it should s"""throw org.json4s.package$$MappingException while deserialize $JNothing to (ZonedDateTime)""" in {
     assertThrows[MappingException] {
@@ -365,10 +374,33 @@ class Json4sSerializationTest extends FlatSpec with Matchers {
   //--------------------------------------------------------------------------------
   // Case class serialization
   it must s"""serialize $mci to $mciJson""" in {
-    Serialization.serialize(mci) should be(mciJson)
+    Serialization.serialize(mci) shouldBe mciJson
   }
 
   it must s"""deserialize $mciJson to $mci""" in {
-    Serialization.deserialize[MockClass](mciJson) should be(mci)
+    Serialization.deserialize[MockClass](mciJson) shouldBe mci
+  }
+
+  //--------------------------------------------------------------------------------
+  // Option[T] serialization
+  it should s"serialize $intOptionVal to $mockJsonIntValue" in {
+    Serialization.serialize(intOptionVal) shouldBe mockJsonIntValue
+  }
+  it should s"deserialize $mockJsonIntValue to $intOptionVal" in {
+    Serialization.deserialize[Option[Int]](mockJsonIntValue) shouldBe intOptionVal
+  }
+
+  it should s"serialize $doubleOptionVal to $mockJsonDoubleValue" in {
+    Serialization.serialize(doubleOptionVal) shouldBe mockJsonDoubleValue
+  }
+  it should s"deserialize $mockJsonDoubleValue to $doubleOptionVal" in {
+    Serialization.deserialize[Option[Double]](mockJsonDoubleValue) shouldBe doubleOptionVal
+  }
+
+  it should s"serialize $strOptionVal to $strJson" in {
+    Serialization.serialize(strOptionVal) shouldBe strJson
+  }
+  it should s"deserialize $strJson to $strOptionVal" in {
+    Serialization.deserialize[Option[String]](strJson) shouldBe strOptionVal
   }
 }

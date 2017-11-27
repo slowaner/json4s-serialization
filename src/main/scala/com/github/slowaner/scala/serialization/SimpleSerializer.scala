@@ -1,6 +1,6 @@
 package com.github.slowaner.scala.serialization
 
-trait SimpleSerializer[M, R] extends Serializer[M, R] {
+trait SimpleSerializer[-M, +R] extends Serializer[M, R] {
 
   override final def serializeAll: PartialFunction[M, R] = this.serializeSelf
 

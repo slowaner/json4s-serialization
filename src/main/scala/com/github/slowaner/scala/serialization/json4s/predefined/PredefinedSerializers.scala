@@ -17,6 +17,7 @@ trait PredefinedSerializers {
 
   val predefinedSerializers = new JsonSerializers[Any](
     Null2JsonSerializer.asInstanceOf[JsonSerializer[Any]],
+    Option2JsonSerializer.asInstanceOf[JsonSerializer[Any]],
     Seq2JsonSerializer.asInstanceOf[JsonSerializer[Any]],
     Set2JsonSerializer.asInstanceOf[JsonSerializer[Any]]
   )
@@ -27,11 +28,12 @@ trait PredefinedSerializers {
     JValue2SetDeserializer,
     JValue2SeqDeserializer,
     JValue2MapDeserializer,
-    JValue2DateSerializer,
-    JValue2LocalDateTimeSerializer,
-    JValue2ZonedDateTimeSerializer,
-    JValue2InstantSerializer,
-    JValue2OffsetDateTimeSerializer
+    JValue2DateDeserializer,
+    JValue2LocalDateTimeDeserializer,
+    JValue2ZonedDateTimeDeserializer,
+    JValue2InstantDeserializer,
+    JValue2OffsetDateTimeDeserializer,
+    JValue2OptionDeserializer
   )
 
 
@@ -47,6 +49,13 @@ trait PredefinedSerializers {
 
     override def serializeWith(fieldsNames: Set[String]): PartialFunction[Any, JValue] = {
       case null => JNull
+    }
+  }
+
+  object Option2JsonSerializer extends JsonSimpleSerializer[Option[_]] {
+    override val serializeSelf: PartialFunction[Any, JValue] = {
+      case Some(value) ⇒ jsonSerialization.serialize(value)
+      case None ⇒ JNothing
     }
   }
 
@@ -125,44 +134,47 @@ trait PredefinedSerializers {
 
   object JValue2IntDeserializer extends JsonCustomDeserializer[Int]({
     case JInt(intVal) => intVal.toInt
-    case json => throw MappingException(s"$json cannot be converted to Int", null)
   })
 
   object JValue2DoubleDeserializer extends JsonCustomDeserializer[Double]({
     case JDouble(doubleVal) => doubleVal
     case JDecimal(decimalVal) => decimalVal.toDouble
-    case json => throw MappingException(s"$json cannot be converted to Double", null)
   })
 
   // Date deserializers
-  object JValue2DateSerializer extends JsonCustomDeserializer[Date]({
+  object JValue2DateDeserializer extends JsonCustomDeserializer[Date]({
     case JString(dtmStr) => DateFormat.getDateTimeInstance.parse(dtmStr)
     case JNull => null
-    case json => throw MappingException(s"$json cannot be converted to Date", null)
   })
 
-  object JValue2LocalDateTimeSerializer extends JsonCustomDeserializer[LocalDateTime]({
+  object JValue2LocalDateTimeDeserializer extends JsonCustomDeserializer[LocalDateTime]({
     case JString(dtmStr) => LocalDateTime.parse(dtmStr)
     case JNull => null
-    case json => throw MappingException(s"$json cannot be converted to LocalDateTime", null)
   })
 
-  object JValue2ZonedDateTimeSerializer extends JsonCustomDeserializer[ZonedDateTime]({
+  object JValue2ZonedDateTimeDeserializer extends JsonCustomDeserializer[ZonedDateTime]({
     case JString(dtmStr) => ZonedDateTime.parse(dtmStr)
     case JNull => null
-    case json => throw MappingException(s"$json cannot be converted to ZonedDateTime", null)
   })
 
-  object JValue2InstantSerializer extends JsonCustomDeserializer[Instant]({
+  object JValue2InstantDeserializer extends JsonCustomDeserializer[Instant]({
     case JString(instStr) => Instant.parse(instStr)
     case JNull => null
-    case json => throw MappingException(s"$json cannot be converted to Instant", null)
   })
 
-  object JValue2OffsetDateTimeSerializer extends JsonCustomDeserializer[OffsetDateTime]({
+  object JValue2OffsetDateTimeDeserializer extends JsonCustomDeserializer[OffsetDateTime]({
     case JString(dtmStr) => OffsetDateTime.parse(dtmStr)
     case JNull => null
-    case json => throw MappingException(s"$json cannot be converted to OffsetDateTime", null)
   })
+
+  object JValue2OptionDeserializer extends JsonDeserializer[Option[_]] {
+    override val deserialize: PartialFunction[(ru.TypeTag[_], JValue), Option[_]] = {
+      case (ttag, JNothing) if ttag.tpe <:< ru.typeOf[Option[Any]] => None
+      case (ttag, JNull) if ttag.tpe <:< ru.typeOf[Option[Any]] => Some(null)
+      case (ttag, json) if ttag.tpe <:< ru.typeOf[Option[Any]] =>
+        val jttag = ReflectionHelper.typeToTypeTag(ttag.tpe.typeArgs.head, ttag.mirror)
+        Some(jsonSerialization.deserialize[Option[_]](json)(jttag.asInstanceOf[ru.TypeTag[Option[_]]]))
+    }
+  }
 
 }

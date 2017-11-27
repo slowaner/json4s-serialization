@@ -8,6 +8,8 @@ import com.github.slowaner.scala.serialization.{Deserializers, Serializers}
 import org.json4s
 import org.json4s._
 
+import com.github.slowaner.scala.reflections4s.ReflectionHelper
+
 /**
   * Created by slowaner on 16.06.2017.
   */
@@ -40,6 +42,6 @@ trait JsonSerialization extends serialization.Serialization[JValue] with JsonDes
   override final def deserialize[R](a: json4s.JValue)(implicit ttag: ru.TypeTag[R]): R = {
     val deser = deserializers.customDeserializer.orElse(caseClassDeserializer.deserialize)
     if (deser.isDefinedAt((ttag, a))) deser((ttag, a)).asInstanceOf[R]
-    else a.extract(jsonFormats, Manifest.classType(ttag.mirror.runtimeClass(ttag.tpe))).asInstanceOf[R]
+    else a.extract(jsonFormats, ReflectionHelper.manifestFor(ttag))
   }
 }

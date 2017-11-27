@@ -19,10 +19,7 @@ trait Implicits extends JsonImplicits with JsonDoubleMode {
 
   implicit def Long2Json(x: Long): JValue = jsonSerialization.serialize(x)
 
-  implicit def Option2Json(x: Option[_]): JValue = x match {
-    case Some(value) ⇒ jsonSerialization.serialize(value)
-    case _ ⇒ JNothing
-  }
+  implicit def Option2Json(x: Option[_]): JValue = jsonSerialization.serialize(x)
 
   // Java class serialization
   //
